@@ -11,7 +11,8 @@ let Api = {
         return m.request({
             method: method,
             url: `${Api.baseUrl}/${args.join('/')}`,
-            data: data
+            data: data,
+            body: data
         })
             .catch(error => {
                 COMPONENT.Notification.open({

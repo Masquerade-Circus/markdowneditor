@@ -1,37 +1,17 @@
-let fs = require('fs');
-let micro = require('micro');
-let Router = require('micro-ex-router');
-let cors = require('cors');
-let compression = require('compression');
-let Helper = require('./helpers');
-let SERVICE = require('./services');
+require('./bootstrap');
+let FactoryDb = require('./factory_db');
+let Router = require('./routers');
 
-// Create index file
-let packageJson = require('../package.json');
-let indexHtml = Helper.compile(fs.readFileSync('./public/index.html', 'utf8'), {
-    version: packageJson.version,
-    title: 'Markdown Editor'
-});
+// Init server after the db is created/loaded
+let startQuery = FactoryDb()
+    .then(Db => global.DB = Db)
+    .then(() => {
+        let port = process.env.port || 3000;
+        Router.listen(port, () => console.log('Express server listening on port ' + port));
+    })
+    .catch(e => {
+        console.log(e);
+        process.exit();
+    });
 
-// Create a new router
-let router = Router();
-
-router
-    // Add cors middleware
-    .use((req, res) => new Promise(next => cors()(req, res, next)))
-    // Add compression middleware
-    .use((req, res) => new Promise(next => compression()(req, res, next)))
-    // Serve public folder
-    .use(Helper.serveDir('./public'))
-    // Serve index file
-    .get('/', Helper.render(indexHtml))
-    // We have no favicon
-    .get('/favicon.ico', (req, res) => 'Not found')
-    ;
-
-// Init micro server
-let server = micro(router);
-let port = process.env.port || 3000;
-server.listen(port, async () => console.log('Micro listening on port ' + port));
-
-module.exports = server;
+module.exports = startQuery;

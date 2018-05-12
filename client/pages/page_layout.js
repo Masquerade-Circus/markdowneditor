@@ -12,11 +12,25 @@ let Page = {
         list: []
     },
     loading: true,
-    oncreate() {
-        setTimeout(() => {
-            Page.loading = false;
-            m.redraw();
-        }, 5000);
+    setCurrent(current) {
+        Page.documents.current = Page.documents.list[current];
+        if (Page.documents.current.$loki !== undefined) {
+            Page.documents.list.forEach((item, index) => {
+                if (item.isNew && item.code.trim().length === 0) {
+                    Page.documents.list.splice(index, 1);
+                }
+            });
+        }
+    },
+    oninit() {
+        SERVICE.Documents
+            .find()
+            .then(response => {
+                Page.documents.list = response.data;
+                Page.setCurrent(0);
+                Page.loading = false;
+            })
+            .catch(response => console.log(response));
     },
     openModal() {
         COMPONENT.Modal.open({
@@ -40,12 +54,6 @@ let Page = {
             ]
         });
     },
-    getModal() {
-        return m(COMPONENT.Modal);
-    },
-    getNotification() {
-        return m(COMPONENT.Notification);
-    },
     getHeader() {
         if (Page.loading) {
             return [
@@ -62,14 +70,13 @@ let Page = {
             ];
         }
 
-
         return [
             m('h1', [
                 Page.documents.current.title,
-                m('small', Page.documents.current.saved)
+                m('small', 'La última modificación se realizó ' + SERVICE.Timeago.format(Page.documents.current.modifiedAt))
             ]),
             m('nav', [
-                Page.documents.current.permalink.trim().length <= 0
+                !Page.documents.current.$loki
                     ? ''
                     : m('button', [
                         m('i.icon.icofont.icofont-share'),
@@ -94,13 +101,18 @@ let Page = {
             ]);
         }
 
-        return m('ul[data-list="two-line"]', Page.documents.list.map(item => {
-            return m('li', { 'data-background': item.id === Page.documents.current.id ? 'info 50' : '' }, [
-                m('a[href="#"]', { onclick: e => e.preventDefault() }, [
-                    m('i.icon.icofont.icofont-ebook', { 'data-background': item.id === Page.documents.current.id ? 'info' : 'default' }),
-                    item.title,
-                    m('small', item.saved)
-                ]),
+        return m('ul[data-list="two-line"]', Page.documents.list.map((item, index) => {
+            return m('li', { 'data-background': index === Page.documents.current.index ? 'info 50' : '' }, [
+                m('a[href="#"]', {
+                    onclick(e) {
+                        Page.setCurrent(index);
+                        e.preventDefault();
+                    }
+                }, [
+                        m('i.icon.icofont.icofont-ebook', { 'data-background': item.id === Page.documents.current.id ? 'info' : 'default' }),
+                        item.title,
+                        m('small', SERVICE.Timeago.format(item.modifiedAt))
+                    ]),
                 m('a[href="#"]', { onclick: e => e.preventDefault() }, [
                     m('i.icon.icofont.icofont-ui-delete[data-font="danger"]')
                 ])
@@ -112,7 +124,19 @@ let Page = {
             return m('button[data-button="success raised new"]');
         }
 
-        return m('button[data-button="success raised new"]', 'Nuevo');
+        return m('button[data-button="success raised new"]', {
+            onclick(e) {
+                e.preventDefault();
+
+                if (Page.documents.current.isNew && Page.documents.current.code.trim().length === 0) {
+                    Object.assign(Page.documents.current, SERVICE.Documents.new());
+                    return;
+                }
+
+                Page.documents.list.unshift(SERVICE.Documents.new());
+                Page.setCurrent(0);
+            }
+        }, 'Nuevo');
     },
     getDeleteButton() {
         if (Page.loading) {
@@ -193,9 +217,9 @@ let Page = {
             ),
             m('article#editor.flex.align-stretch', [
                 Page.getEditor(),
-                Page.getNotification()
+                m(COMPONENT.Notification)
             ]),
-            Page.getModal()
+            m(COMPONENT.Modal)
         ];
 
     }

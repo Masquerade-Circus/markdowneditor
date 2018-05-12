@@ -10,13 +10,14 @@
         "start": "cross-env NODE_ENV=\"production\" node server.js"
     },
     "dependencies": {
+        "body-parser": "^1.18.2",
         "compression": "^1.7.2",
         "cors": "^2.8.4",
         "cross-env": "^5.1.4",
+        "express": "^4.16.3",
         "express-response-handler": "^1.4.1",
+        "lokijs": "^1.5.4",
         "marked": "^0.3.19",
-        "micro": "^9.1.0",
-        "micro-ex-router": "^1.5.4",
         "mithril": "^1.1.6",
         "recursive-readdir": "^2.2.2",
         "timeago.js": "^3.0.2"

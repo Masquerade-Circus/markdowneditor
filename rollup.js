@@ -24,7 +24,7 @@ let inputOptions = {
     input: './client/index.js',
     plugins: [
         progress({ clearLine: false }),
-        includepaths({ paths: ['./client', './node_modules'] }),
+        includepaths({ paths: ['./client', './node_modules', './config'] }),
         nodeResolve({
             jsnext: true,
             main: true,
@@ -32,7 +32,10 @@ let inputOptions = {
         }),
 
         commonjs({
-            include: './node_modules/**',  // Default: undefined
+            include: [
+                './config/**',
+                './node_modules/**'
+            ],  // Default: undefined
             // if false then skip sourceMap generation for CommonJS modules
             sourceMap: true,  // Default: true
         }),
@@ -61,7 +64,7 @@ if (process.env.NODE_ENV !== 'production') {
 
     inputOptions.output = outputOptions;
     inputOptions.watch = {
-        include: ['./client/**']
+        include: ['./client/**', './config/**']
     };
 
     const watch = rollup.watch(inputOptions);
