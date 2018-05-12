@@ -1,0 +1,49 @@
+{
+    "name": "markdowneditor",
+    "version": "1.0.0",
+    "main": "server.js",
+    "license": "GPL",
+    "scripts": {
+        "dev:server": "cross-env NODE_ENV=\"development\" nodemon -w ./backend -w ./public server.js",
+        "dev:client": "cross-env NODE_ENV=\"development\" node rollup.js",
+        "build": "cross-env NODE_ENV=\"production\" node rollup.js",
+        "start": "cross-env NODE_ENV=\"production\" node server.js"
+    },
+    "dependencies": {
+        "compression": "^1.7.2",
+        "cors": "^2.8.4",
+        "cross-env": "^5.1.4",
+        "express-response-handler": "^1.4.1",
+        "marked": "^0.3.19",
+        "micro": "^9.1.0",
+        "micro-ex-router": "^1.5.4",
+        "mithril": "^1.1.6",
+        "recursive-readdir": "^2.2.2",
+        "timeago.js": "^3.0.2"
+    },
+    "jscsConfig": {
+        "requireSemicolons": true,
+        "validateIndentation": {
+            "value": 4,
+            "allExcept": [
+                "emptyLines"
+            ]
+        }
+    },
+    "devDependencies": {
+        "nodemon": "^1.15.1",
+        "rollup": "^0.57.1",
+        "rollup-plugin-buble": "^0.19.2",
+        "rollup-plugin-commonjs": "^9.1.0",
+        "rollup-plugin-filesize": "^1.5.0",
+        "rollup-plugin-includepaths": "^0.2.2",
+        "rollup-plugin-node-builtins": "^2.1.2",
+        "rollup-plugin-node-globals": "^1.2.0",
+        "rollup-plugin-node-resolve": "^3.3.0",
+        "rollup-plugin-progress": "^0.4.0",
+        "rollup-plugin-uglify": "^3.0.0"
+    },
+    "now": {
+        "alias": "markdowneditor"
+    }
+}
