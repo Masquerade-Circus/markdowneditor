@@ -50,7 +50,7 @@ button, [data-button]{text-transform: none}
 [data-list] > li > *:first-child > [class*="icon"] {font-size: 24rem;}
 [data-list]>li>*{background:inherit;}
 
-h1, h2, h3, h4, h5{font-weight: 400}
+h1, h2, h3, h4, h5{font-weight: 400;}
 textarea{height: auto;}
 
 dialog[open]{z-index: 1000;}
@@ -72,9 +72,10 @@ dialog[open]{z-index: 1000;}
 [data-icon-placeholder]{display: inline-block;width:21rem;height:21rem;border-radius: 50%;}
 
 /*** Editor ***/
-#editor{padding: 0;background:#fff;position: relative;}
-#editor>textarea{border-right: 1px solid #ddd;}
-#editor>.preview{padding: 15rem;}
+#editor{padding: 0;background:#fff;position: relative;height: 100%;overflow: hidden;}
+#editor>textarea{border-right: 1px solid #ddd;line-height: inherit;}
+#editor>.preview{padding: 15rem;position: relative;max-height: 100%;overflow: auto;}
+#editor>.preview h1,#editor>.preview  h2,#editor>.preview  h3,#editor>.preview  h4,#editor>.preview  h5 {font-weight: 500}
  
 /*** Responsive ***/
 @media (min-width: 1280px) {

@@ -6,11 +6,18 @@ let Page = {
             title: '',
             saved: '',
             permalink: '',
+            code: '',
             loading: true
         },
         list: []
     },
     loading: true,
+    oncreate() {
+        setTimeout(() => {
+            Page.loading = false;
+            m.redraw();
+        }, 5000);
+    },
     openModal() {
         COMPONENT.Modal.open({
             content: [
@@ -168,8 +175,13 @@ let Page = {
             ];
         }
         return [
-            m('textarea[data-background="default 100"]'),
-            m('div.preview'),
+            m('textarea[data-background="default 100"]', {
+                oninput(e) {
+                    Page.documents.current.code = e.target.value;
+                },
+                value: Page.documents.current.code
+            }),
+            m('div.preview', m.trust(SERVICE.Markdown.render(Page.documents.current.code))),
             Page.getDeleteButton()
         ];
     },
