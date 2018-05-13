@@ -3,7 +3,6 @@ let Component = {
     header: undefined,
     content: undefined,
     footer: undefined,
-    timeout: undefined,
     open(options = {}) {
         Component.header = options.header || undefined;
         Component.content = options.content || undefined;
@@ -22,19 +21,17 @@ let Component = {
             return '';
         }
 
-        return m('dialog[data-card][open]#modal', {
-            onclick: Component.close
-        }, [
-                Component.header
-                    ? m('header', Component.header)
-                    : '',
-                Component.content
-                    ? m('section', Component.content)
-                    : '',
-                Component.footer
-                    ? m('footer', Component.footer)
-                    : ''
-            ]);
+        return m('dialog[data-card][open]#modal', [
+            Component.header
+                ? m('header', Component.header)
+                : '',
+            Component.content
+                ? m('section', Component.content)
+                : '',
+            Component.footer
+                ? m('footer', Component.footer)
+                : ''
+        ]);
     }
 };
 

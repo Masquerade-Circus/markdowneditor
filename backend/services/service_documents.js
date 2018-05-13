@@ -28,12 +28,19 @@ let Service = {
         return Service.add(doc);
     },
     find(options = {}) {
+        options.deleted = options.deleted || false;
+
         let documents = Service
             .getCollection()
             .chain()
             .find(options)
             .simplesort('modifiedAt')
-            .data();
+            .data()
+            .map(item => {
+                delete item.deleted;
+                delete item.deletedAt;
+                return item;
+            });
 
         if (documents.length === 0) {
             return Service
@@ -56,7 +63,8 @@ let Service = {
             modifiedAt: new Date(),
             title: document.title.trim() || '',
             ip: document.ip.trim() || '',
-            code: document.code.trim() || ''
+            code: document.code.trim() || '',
+            deleted: false
         };
 
         return Promise.resolve(Service.getCollection().insert(doc));
@@ -86,6 +94,31 @@ let Service = {
         doc.modifiedAt = new Date();
         Service.getCollection().update(doc);
         return Promise.resolve(Service.getCollection().get(document.$loki));
+    },
+    delete(document) {
+        if (!Service.isValid(document)) {
+            return Promise.reject(new Error('document.error.invalid'));
+        }
+
+        // Find the document 
+        let doc = Service.getCollection().get(document.$loki);
+
+        // If does not exist throw error not found 
+        if (doc === null) {
+            return Promise.reject(new Error('document.error.not_found'));
+        }
+
+        // If exists check if the ip is the same as the saved document 
+        // If isnt throw error unauthorized
+        if (doc.ip !== document.ip) {
+            return Promise.reject(new Error('document.error.unauthorized'));
+        }
+
+        // Save the document 
+        doc.deletedAt = new Date();
+        doc.deleted = true;
+        Service.getCollection().update(doc);
+        return Promise.resolve();
     }
 
 };

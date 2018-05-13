@@ -29,11 +29,30 @@ Router
                 return res.error.BadRequest('document.error.bad_request', { errors: err });
             });
     })
-    .put('/:id', (req, res) => {
+    .put('/', (req, res) => {
         req.body.ip = req.ip;
         SERVICE.Documents
             .save(req.body)
             .then(data => res.success.OK('document.success.save', data))
+            .catch(err => {
+                if (err.message === 'document.error.invalid') {
+                    return res.error.UnprocessableEntity('document.error.invalid', { errors: err });
+                }
+
+                if (err.message === 'document.error.not_found') {
+                    return res.error.NotFound('document.error.not_found', { errors: err });
+                }
+
+                if (err.message === 'document.error.unauthorized') {
+                    return res.error.Unauthorized('document.error.unauthorized', { errors: err });
+                }
+            });
+    })
+    .delete('/', (req, res) => {
+        req.body.ip = req.ip;
+        SERVICE.Documents
+            .delete(req.body)
+            .then(data => res.success.OK('document.success.delete', data))
             .catch(err => {
                 if (err.message === 'document.error.invalid') {
                     return res.error.UnprocessableEntity('document.error.invalid', { errors: err });

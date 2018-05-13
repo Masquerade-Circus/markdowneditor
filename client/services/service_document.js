@@ -57,7 +57,7 @@ let Service = {
                 }
 
                 if (!document.isNew && document.$loki !== undefined) {
-                    query = SERVICE.Api.put('api', document.$loki, document);
+                    query = SERVICE.Api.put('api', document);
                 }
 
                 return query
@@ -73,6 +73,29 @@ let Service = {
             .catch(err => {
                 document.isModified = true;
                 throw err;
+            });
+    },
+    delete(document = {}) {
+        document.isSaving = true;
+        return Service
+            .isValid(document)
+            .then(() => {
+                let query;
+
+                if (document.isNew && document.$loki === undefined) {
+                    return Promise.resolve();
+                }
+
+                if (!document.isNew && document.$loki !== undefined) {
+                    return SERVICE.Api
+                        .delete('api', document)
+                        .then(response => {
+                            COMPONENT.Notification.open({
+                                color: 'success',
+                                content: response.message
+                            });
+                        });
+                }
             });
     }
 };

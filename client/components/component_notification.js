@@ -9,9 +9,9 @@ let Component = {
         '': 30
     },
     timeout: undefined,
-    closeAfter: 5,
+    closeAfter: 4,
     open(options = {}) {
-        Component.closeAfter = options.closeAfter || 5;
+        Component.closeAfter = options.closeAfter || 4;
         Component.color = options.color || '';
         Component.content = options.content || '';
         for (let i in Component.sizes) {
@@ -26,7 +26,7 @@ let Component = {
         }, Component.closeAfter * 1000);
     },
     close(e) {
-        Component.closeAfter = 5;
+        Component.closeAfter = 4;
         Component.color = '';
         Component.content = '';
         Component.size = '';

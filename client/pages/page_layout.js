@@ -42,8 +42,8 @@ let Page = {
                 }
             });
     },
-    oninit() {
-        SERVICE.Documents
+    find() {
+        return SERVICE.Documents
             .find()
             .then(response => {
                 Page.documents.list = response.data;
@@ -52,27 +52,70 @@ let Page = {
             })
             .catch(response => console.log(response));
     },
-    openModal() {
-        COMPONENT.Modal.open({
-            content: [
-                m('div', 'Escribe nuevamente el nombre del documento para borrarlo'),
-                m('.form-group', [
-                    m('input[type="text"][placeholder="Nombre del documento"]'),
-                    m('label', 'Nombre del documento')
-                ])
-            ],
-            footer: [
-                m('nav', [
-                    m('button[data-button="default"]', {
-                        onclick(e) {
-                            COMPONENT.Modal.opened = false;
-                            e.preventDefault();
-                        }
-                    }, 'Cancelar'),
-                    m('button[data-button="danger"]', 'Eliminar')
-                ])
-            ]
-        });
+    oninit() {
+        Page.find();
+    },
+    openDeleteModal(document = {}) {
+        var name = '';
+        var valid = undefined;
+        var className = '';
+
+        SERVICE.Documents
+            .isValid(document)
+            .then(() => {
+                COMPONENT.Modal.open({
+                    content: [
+                        m('div', 'Escribe nuevamente el nombre del documento para borrarlo'),
+                        m('.form-group' + className, [
+                            m('input[type="text"][placeholder="Nombre del documento"]', {
+                                oninput(e) {
+                                    name = e.target.value;
+                                },
+                                value: name
+                            }),
+                            m('label', 'Nombre del documento')
+                        ])
+                    ],
+                    footer: [
+                        m('nav', [
+                            m('button[data-button="default"]', {
+                                onclick(e) {
+                                    COMPONENT.Modal.close(e);
+                                    name = '';
+                                    e.preventDefault();
+                                }
+                            }, 'Cancelar'),
+                            m('button[data-button="danger"]', {
+                                onclick(e) {
+                                    valid = name === document.title;
+                                    className = valid ? '.has-success' : '.has-error';
+                                    COMPONENT.Modal.content = [
+                                        m('div', 'Escribe nuevamente el nombre del documento para borrarlo'),
+                                        m('.form-group' + className, [
+                                            m('input[type="text"][placeholder="Nombre del documento"]', {
+                                                oninput(e) {
+                                                    name = e.target.value;
+                                                },
+                                                value: name
+                                            }),
+                                            m('label', 'Nombre del documento')
+                                        ])
+                                    ];
+                                    if (valid) {
+                                        COMPONENT.Modal.close(e);
+                                        name = '';
+                                        SERVICE.Documents
+                                            .delete(document)
+                                            .then(() => {
+                                                Page.find();
+                                            });
+                                    }
+                                }
+                            }, 'Eliminar')
+                        ])
+                    ]
+                });
+            });
     },
     getHeader() {
         if (Page.loading) {
@@ -152,9 +195,14 @@ let Page = {
                         item.title,
                         m('small', SERVICE.Timeago.format(item.modifiedAt))
                     ]),
-                m('a[href="#"]', { onclick: e => e.preventDefault() }, [
-                    m('i.icon.icofont.icofont-ui-delete[data-font="danger"]')
-                ])
+                m('a[href="#"]', {
+                    onclick(e) {
+                        Page.openDeleteModal(item);
+                        e.preventDefault();
+                    }
+                }, [
+                        m('i.icon.icofont.icofont-ui-delete[data-font="danger"]')
+                    ])
             ]);
         }));
     },
@@ -180,14 +228,17 @@ let Page = {
     },
     getDeleteButton() {
         if (Page.loading) {
-            return m('a[href="#"][data-fab="danger"]', { onclick: e => e.preventDefault() }, [
-
-            ]);
+            return m('a[href="#"][data-fab="danger"]', { onclick: e => e.preventDefault() });
         }
 
-        return m('a[href="#"][data-fab="danger"]', { onclick: e => e.preventDefault() }, [
-            m('i.icon.icofont.icofont-ui-delete')
-        ]);
+        return m('a[href="#"][data-fab="danger"]', {
+            onclick(e) {
+                Page.openDeleteModal(Page.documents.current);
+                e.preventDefault();
+            }
+        }, [
+                m('i.icon.icofont.icofont-ui-delete')
+            ]);
     },
     getDrawer() {
         return [
