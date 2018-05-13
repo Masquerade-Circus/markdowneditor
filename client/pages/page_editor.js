@@ -57,7 +57,7 @@ let Page = {
                 m('h1', [
                     Page.document.title,
                     ' ',
-                    m('small', 'La última modificación se realizó ' + SERVICE.Timeago.format(Page.document.modifiedAt))
+                    m('small', {}, SERVICE.Lang('document.lastmod') + SERVICE.Timeago.format(Page.document.modifiedAt))
                 ]),
                 m('nav', [
                     /* !Page.isOwner
@@ -94,10 +94,10 @@ let Page = {
                 }),
                 Page.document.isSaving
                     ? m('small', [
-                        'Guardando...',
+                        SERVICE.Lang('actions.saving'),
                         m('[data-progress="indeterminated success"]')
                     ])
-                    : m('small', 'La última modificación se realizó ' + SERVICE.Timeago.format(Page.document.modifiedAt))
+                    : m('small', {}, SERVICE.Lang('document.lastmod') + SERVICE.Timeago.format(Page.document.modifiedAt))
             ]),
             m('nav', [
                 !Page.document.$loki
@@ -109,7 +109,7 @@ let Page = {
                         }
                     }, [
                             m('i.icon.icofont.icofont-share'),
-                            m('span', ' Compartir')
+                            m('span', {}, ' ' + SERVICE.Lang('actions.share'))
                         ])
             ])
         ];

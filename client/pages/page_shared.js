@@ -1,19 +1,4 @@
 let Page = {
-    title: 'Markdown Editor',
-    documents: {
-        current: {
-            title: '',
-            saved: '',
-            permalink: '',
-            code: '',
-            loading: true
-        },
-        list: []
-    },
-    loading: true,
-    oninit() {
-
-    },
     view(vnode) {
         return [
             m('header[data-background="info 600"].shared',

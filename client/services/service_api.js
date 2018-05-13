@@ -17,7 +17,7 @@ let Api = {
             .catch(error => {
                 COMPONENT.Notification.open({
                     color: 'danger',
-                    content: error.message
+                    content: SERVICE.Lang(error.message)
                 });
                 throw error;
             });

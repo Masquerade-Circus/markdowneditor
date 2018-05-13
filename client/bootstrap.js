@@ -1,4 +1,5 @@
 import './externals/FastActive.min.js';
+
 import m from 'mithril';
 import CONFIG from './config';
 import HELPER from './helpers';

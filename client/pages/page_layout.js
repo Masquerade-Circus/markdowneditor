@@ -1,6 +1,6 @@
 let Page = {
     drawerOpened: false,
-    title: 'Markdown Editor',
+    title: '',
     documents: {
         current: {
             title: '',
@@ -55,6 +55,7 @@ let Page = {
             .catch(response => console.log(response));
     },
     oninit() {
+        Page.title = SERVICE.Lang('title');
         Page.find();
     },
     openDeleteModal(document = {}) {
@@ -67,15 +68,16 @@ let Page = {
             .then(() => {
                 COMPONENT.Modal.open({
                     content: [
-                        m('div', 'Escribe nuevamente el nombre del documento para borrarlo'),
+                        m('div', '' + SERVICE.Lang('ui.delete_confirmation.title')),
                         m('.form-group' + className, [
-                            m('input[type="text"][placeholder="Nombre del documento"]', {
+                            m('input[type="text"]', {
+                                placeholder: SERVICE.Lang('ui.delete_confirmation.placeholder'),
                                 oninput(e) {
                                     name = e.target.value;
                                 },
                                 value: name
                             }),
-                            m('label', 'Nombre del documento')
+                            m('label', SERVICE.Lang('ui.delete_confirmation.placeholder'))
                         ])
                     ],
                     footer: [
@@ -86,21 +88,22 @@ let Page = {
                                     name = '';
                                     e.preventDefault();
                                 }
-                            }, 'Cancelar'),
+                            }, SERVICE.Lang('actions.cancel')),
                             m('button[data-button="danger"]', {
                                 onclick(e) {
                                     valid = name === document.title;
                                     className = valid ? '.has-success' : '.has-error';
                                     COMPONENT.Modal.content = [
-                                        m('div', 'Escribe nuevamente el nombre del documento para borrarlo'),
+                                        m('div', SERVICE.Lang('ui.delete_confirmation.title')),
                                         m('.form-group' + className, [
-                                            m('input[type="text"][placeholder="Nombre del documento"]', {
+                                            m('input[type="text"]', {
+                                                placeholder: SERVICE.Lang('ui.delete_confirmation.placeholder'),
                                                 oninput(e) {
                                                     name = e.target.value;
                                                 },
                                                 value: name
                                             }),
-                                            m('label', 'Nombre del documento')
+                                            m('label', SERVICE.Lang('ui.delete_confirmation.placeholder'))
                                         ])
                                     ];
                                     if (valid) {
@@ -113,7 +116,7 @@ let Page = {
                                             });
                                     }
                                 }
-                            }, 'Eliminar')
+                            }, SERVICE.Lang('actions.delete'))
                         ])
                     ]
                 });
@@ -125,18 +128,18 @@ let Page = {
             .then(() => {
                 COMPONENT.Modal.open({
                     header: [
-                        m('h1', 'Compartir con otros usuarios')
+                        m('h1', SERVICE.Lang('document.share_modal.title'))
                     ],
                     content: [
                         m('.form-group', [
-                            m('input[type="text"][placeholder="Nombre del documento"]', {
+                            m('input[type="text"]', {
                                 value: SERVICE.Api.baseUrl + '/#!/shared/' + document.$loki
                             }),
-                            m('label', 'Cualquiera con el vínculo puede verlo.'),
+                            m('label', SERVICE.Lang('document.share_modal.label')),
                             m('p.help-block', [
                                 m('a[target="_blank"]', {
                                     href: SERVICE.Api.baseUrl + '/#!/shared/' + document.$loki
-                                }, 'Prueba el enlace')
+                                }, SERVICE.Lang('document.share_modal.test_link'))
                             ])
                         ])
                     ],
@@ -148,7 +151,7 @@ let Page = {
                                     name = '';
                                     e.preventDefault();
                                 }
-                            }, 'Cerrar')
+                            }, SERVICE.Lang('actions.close'))
                         ])
                     ]
                 });
@@ -240,7 +243,7 @@ let Page = {
                         m('[data-flexible-bar]', [
                             m('[data-flexible-bar-media][data-background="info 700"]', [
                                 m('div[style="margin-top:50rem"]', [
-                                    m('h4', Page.title)
+                                    m('h4', SERVICE.Lang('ui.title'))
                                 ])
                             ])
                         ]),

@@ -12,12 +12,12 @@ let Service = {
 
         COMPONENT.Notification.open({
             color: 'danger',
-            content: 'The document is invalid'
+            content: SERVICE.Lang('document.error.invalid')
         });
 
         return Promise.reject({
             status: 'error',
-            message: 'The document is invalid',
+            message: SERVICE.Lang('document.error.invalid'),
             data: document
         });
     },
@@ -95,7 +95,7 @@ let Service = {
                         .then(response => {
                             COMPONENT.Notification.open({
                                 color: 'success',
-                                content: response.message
+                                content: SERVICE.Lang(response.message)
                             });
                         });
                 }
