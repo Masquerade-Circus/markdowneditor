@@ -1,10 +1,15 @@
 let Loki = require("lokijs");
 let Lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
+let path = require('path');
 
 let FactoryDb = () => {
     return new Promise((resolve, reject) => {
         let Adapter = new Lfsa();
-        let Db = new Loki('./tmp/markdown.db', {
+        let dbDir =
+            process.env.NOW
+                ? '/tmp/markdown.db'
+                : path.join(__dirname, '../tmp/markdown.db');
+        let Db = new Loki(dbDir, {
             adapter: Adapter,
             autoload: true,
             autoloadCallback: () => {
