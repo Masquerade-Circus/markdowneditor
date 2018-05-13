@@ -16,6 +16,31 @@ Router
                 return res.error.BadRequest('document.error.bad_request', { errors: err });
             });
     })
+    .get('/:id', (req, res) => {
+        SERVICE.Documents
+            .get(req.params.id)
+            .then(data => {
+                // If the request has the same ip set tell the user that he/she is the owner
+                if (data.ip === req.ip) {
+                    data.isOwner = true;
+                }
+
+                res.success.OK('document.success.get', data);
+            })
+            .catch(err => {
+                if (err.message === 'document.error.get') {
+                    return res.error.UnprocessableEntity('document.error.get', { errors: err });
+                }
+
+                if (err.message === 'document.error.not_found') {
+                    return res.error.NotFound('document.error.not_found', { errors: err });
+                }
+
+                console.log(err);
+
+                return res.error.BadRequest('document.error.bad_request', { errors: err });
+            });
+    })
     .post('/', (req, res) => {
         req.body.ip = req.ip;
         SERVICE.Documents

@@ -8,12 +8,14 @@ let Component = {
         Component.content = options.content || undefined;
         Component.footer = options.footer || undefined;
         Component.opened = true;
+        m.redraw();
     },
     close(e) {
         Component.header = undefined;
         Component.content = undefined;
         Component.footer = undefined;
         Component.opened = false;
+        m.redraw();
         e && e.preventDefault && e.preventDefault();
     },
     view(vnode) {

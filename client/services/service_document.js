@@ -1,10 +1,10 @@
 let Service = {
-    isValid(document = {}) {
+    isValid(document = {}, checkCode = true) {
         let isValid = typeof document === 'object'
             && !Array.isArray(document)
             && Object.keys(document).length > 0
             && typeof document.title === 'string'
-            && typeof document.code === 'string';
+            && (checkCode ? typeof document.code === 'string' : true);
 
         if (isValid) {
             return Promise.resolve();
@@ -40,6 +40,9 @@ let Service = {
     },
     find(options = {}) {
         return SERVICE.Api.get('api');
+    },
+    get(id) {
+        return SERVICE.Api.get('api', id);
     },
     save(document = {}) {
         document.isSaving = true;
@@ -78,7 +81,7 @@ let Service = {
     delete(document = {}) {
         document.isSaving = true;
         return Service
-            .isValid(document)
+            .isValid(document, false)
             .then(() => {
                 let query;
 

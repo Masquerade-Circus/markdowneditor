@@ -14,13 +14,13 @@ let Service = {
 
         return Service.collection;
     },
-    isValid(document = {}) {
+    isValid(document = {}, checkCode = true) {
         return typeof document === 'object'
             && !Array.isArray(document)
             && Object.keys(document).length > 0
             && typeof document.title === 'string'
             && typeof document.ip === 'string'
-            && typeof document.code === 'string';
+            && (checkCode ? typeof document.code === 'string' : true);
     },
     new(ip) {
         let doc = Object.assign({}, CONFIG.Documents.new);
@@ -37,21 +37,41 @@ let Service = {
             .simplesort('modifiedAt')
             .data()
             .map(item => {
-                delete item.deleted;
-                delete item.deletedAt;
-                return item;
+                // This is to not modify the original item
+                let doc = Object.assign({}, item);
+                delete doc.deleted;
+                delete doc.deletedAt;
+                delete doc.code;
+                return doc;
             });
 
         if (documents.length === 0) {
             return Service
                 .new(options.ip)
-                .then(doc => {
+                .then(item => {
+                    // This is to not modify the original item
+                    let doc = Object.assign({}, item);
+                    delete doc.deleted;
+                    delete doc.deletedAt;
+                    delete doc.code;
                     documents.push(doc);
                     return documents;
                 });
         }
 
         return Promise.resolve(documents);
+    },
+    get(id) {
+        let doc = Service
+            .getCollection()
+            .get(id);
+
+        // If does not exist throw error not found 
+        if (doc === null) {
+            return Promise.reject(new Error('document.error.not_found'));
+        }
+
+        return Promise.resolve(doc);
     },
     add(document) {
         if (!Service.isValid(document)) {
@@ -96,7 +116,7 @@ let Service = {
         return Promise.resolve(Service.getCollection().get(document.$loki));
     },
     delete(document) {
-        if (!Service.isValid(document)) {
+        if (!Service.isValid(document, false)) {
             return Promise.reject(new Error('document.error.invalid'));
         }
 

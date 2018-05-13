@@ -12,25 +12,16 @@ let Page = {
         list: []
     },
     loading: true,
-    interval: setInterval(() => Page.save(), 5000),
-    save() {
-        if (
-            Page.documents.current
-            && Page.documents.current.isModified
-            && !Page.documents.current.isSaving
-        ) {
-            return SERVICE.Documents.save(Page.documents.current);
-        }
-
-        return Promise.resolve();
-    },
+    initialId: 0,
     setCurrent(current) {
         // If current document is modified try to save it one last time
-        Page.save()
+        PAGE.Editor
+            .save()
             .then(() => {
                 // Set the new current document
                 Page.documents.current = Page.documents.list[current];
                 Page.documents.current.isModified = false;
+                HELPER.Title(Page.documents.current.title);
 
                 // Remove emptyy documents
                 if (Page.documents.current.$loki !== undefined) {
@@ -40,6 +31,17 @@ let Page = {
                         }
                     });
                 }
+
+                if (!Page.documents.current.isNew) {
+                    m.route.set('/' + Page.documents.current.$loki);
+                }
+
+                if (Page.documents.current.isNew) {
+                    PAGE.Editor.document = Page.documents.current;
+                    PAGE.Editor.document.code = '';
+                    m.route.set('/');
+                }
+
             });
     },
     find() {
@@ -61,7 +63,7 @@ let Page = {
         var className = '';
 
         SERVICE.Documents
-            .isValid(document)
+            .isValid(document, false)
             .then(() => {
                 COMPONENT.Modal.open({
                     content: [
@@ -117,55 +119,40 @@ let Page = {
                 });
             });
     },
-    getHeader() {
-        if (Page.loading) {
-            return [
-                m('h1', [
-                    m('[data-text-placeholder="25 sm"][data-background="info 100"]')
-                ]),
-                m('nav', [
-                    m('button', [
-                        m('[data-icon-placeholder][data-background="info 100"]'),
-                        ' ',
-                        m('[data-text-placeholder="25 sm"][data-background="info 100"][style="width: 90rem"]')
-                    ])
-                ])
-            ];
-        }
-
-        return [
-            m('h1', [
-                m('input[type="text"].title-input', {
-                    style: 'width: ' + ((Page.documents.current.title.length + 1) * 10) + 'rem;',
-                    oninput(e) {
-                        if (Page.documents.current.isSaving) {
-                            return e.preventDefault();
-                        }
-
-                        Page.documents.current.title = e.target.value;
-                        Page.documents.current.isModified = true;
-                    },
-                    onblur() {
-                        Page.save();
-                    },
-                    value: Page.documents.current.title
-                }),
-                Page.documents.current.isSaving
-                    ? m('small', [
-                        'Guardando...',
-                        m('[data-progress="indeterminated success"]')
-                    ])
-                    : m('small', 'La última modificación se realizó ' + SERVICE.Timeago.format(Page.documents.current.modifiedAt))
-            ]),
-            m('nav', [
-                !Page.documents.current.$loki
-                    ? ''
-                    : m('button', [
-                        m('i.icon.icofont.icofont-share'),
-                        ' Compartir'
-                    ])
-            ])
-        ];
+    openShareModal(document = {}) {
+        SERVICE.Documents
+            .isValid(document, false)
+            .then(() => {
+                COMPONENT.Modal.open({
+                    header: [
+                        m('h1', 'Compartir con otros usuarios')
+                    ],
+                    content: [
+                        m('.form-group', [
+                            m('input[type="text"][placeholder="Nombre del documento"]', {
+                                value: SERVICE.Api.baseUrl + '/#!/shared/' + document.$loki
+                            }),
+                            m('label', 'Cualquiera con el vínculo puede verlo.'),
+                            m('p.help-block', [
+                                m('a[target="_blank"]', {
+                                    href: SERVICE.Api.baseUrl + '/#!/shared/' + document.$loki
+                                }, 'Prueba el enlace')
+                            ])
+                        ])
+                    ],
+                    footer: [
+                        m('nav', [
+                            m('button[data-button="default"]', {
+                                onclick(e) {
+                                    COMPONENT.Modal.close(e);
+                                    name = '';
+                                    e.preventDefault();
+                                }
+                            }, 'Cerrar')
+                        ])
+                    ]
+                });
+            });
     },
     getList() {
         if (Page.loading) {
@@ -184,26 +171,34 @@ let Page = {
         }
 
         return m('ul[data-list="two-line"]', Page.documents.list.map((item, index) => {
-            return m('li', { 'data-background': index === Page.documents.current.index ? 'info 50' : '' }, [
-                m('a[href="#"]', {
-                    onclick(e) {
-                        Page.setCurrent(index);
-                        e.preventDefault();
-                    }
-                }, [
-                        m('i.icon.icofont.icofont-ebook', { 'data-background': item.id === Page.documents.current.id ? 'info' : 'default' }),
-                        item.title,
-                        m('small', SERVICE.Timeago.format(item.modifiedAt))
-                    ]),
-                m('a[href="#"]', {
-                    onclick(e) {
-                        Page.openDeleteModal(item);
-                        e.preventDefault();
-                    }
-                }, [
-                        m('i.icon.icofont.icofont-ui-delete[data-font="danger"]')
-                    ])
-            ]);
+            return m('li', {
+                'data-background':
+                    (
+                        (item.isNew && Page.documents.current.isNew)
+                        || (item.$loki === Page.documents.current.$loki)
+                    )
+                        ? 'info 50'
+                        : ''
+            }, [
+                    m('a[href="#"]', {
+                        onclick(e) {
+                            Page.setCurrent(index);
+                            e.preventDefault();
+                        }
+                    }, [
+                            m('i.icon.icofont.icofont-ebook', { 'data-background': item.id === Page.documents.current.id ? 'info' : 'default' }),
+                            item.title,
+                            m('small', SERVICE.Timeago.format(item.modifiedAt))
+                        ]),
+                    m('a[href="#"]', {
+                        onclick(e) {
+                            Page.openDeleteModal(item);
+                            e.preventDefault();
+                        }
+                    }, [
+                            m('i.icon.icofont.icofont-ui-delete[data-font="danger"]')
+                        ])
+                ]);
         }));
     },
     getNewButton() {
@@ -225,20 +220,6 @@ let Page = {
                 e.preventDefault();
             }
         }, 'Nuevo');
-    },
-    getDeleteButton() {
-        if (Page.loading) {
-            return m('a[href="#"][data-fab="danger"]', { onclick: e => e.preventDefault() });
-        }
-
-        return m('a[href="#"][data-fab="danger"]', {
-            onclick(e) {
-                Page.openDeleteModal(Page.documents.current);
-                e.preventDefault();
-            }
-        }, [
-                m('i.icon.icofont.icofont-ui-delete')
-            ]);
     },
     getDrawer() {
         return [
@@ -275,52 +256,17 @@ let Page = {
                 ])
         ];
     },
-    getEditor() {
-        if (Page.loading) {
-            return [
-                m('textarea[data-background="default 100"]'),
-                m('div.preview', [
-                    m('[data-text-placeholder="50"][data-background="default 300"][style="margin-bottom: 10rem"]'),
-                    m('[data-text-placeholder="100 sm"][data-background="default 300"][style="margin-bottom: 4rem"]'),
-                    m('[data-text-placeholder="100 sm"][data-background="default 300"][style="margin-bottom: 4rem"]'),
-                    m('[data-text-placeholder="100 sm"][data-background="default 300"][style="margin-bottom: 4rem"]'),
-                    m('[data-text-placeholder="50 sm"][data-background="default 300"][style="margin-bottom: 4rem"]'),
-                ]),
-                Page.getDeleteButton()
-            ];
-        }
-        return [
-            m('textarea[data-background="default 100"]', {
-                oninput(e) {
-                    if (Page.documents.current.isSaving) {
-                        return e.preventDefault();
-                    }
-
-                    Page.documents.current.code = e.target.value;
-                    Page.documents.current.isModified = true;
-                },
-                onblur(e) {
-                    Page.save();
-                },
-                value: Page.documents.current.code
-            }),
-            m('div.preview', m.trust(SERVICE.Markdown.render(Page.documents.current.code))),
-            Page.getDeleteButton()
-        ];
-    },
     view(vnode) {
         return [
             m('header[data-background="info 600"]',
-                Page.getHeader(),
+                PAGE.Editor.getHeader(),
                 Page.getDrawer()
             ),
-            m('article#editor.flex.align-stretch', [
-                Page.getEditor(),
-                m(COMPONENT.Notification)
-            ]),
-            m(COMPONENT.Modal)
+            m('article#editor.flex.align-stretch', vnode.children),
+            PAGE.Editor.getDeleteButton(),
+            m(COMPONENT.Notification),
+            m(COMPONENT.Modal),
         ];
-
     }
 };
 

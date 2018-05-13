@@ -8,7 +8,7 @@ let Router = ROUTER();
 
 // Create index file
 let packageJson = require('../../package.json');
-let indexHtml = HELPER.compile(fs.readFileSync('./public/index.html', 'utf8'), {
+let indexHtml = HELPER.compile(fs.readFileSync('./public/index_template.html', 'utf8'), {
     version: packageJson.version,
     title: 'Markdown Editor'
 });

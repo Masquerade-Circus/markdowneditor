@@ -93,6 +93,7 @@ dialog[open]{z-index: 1000;}
 /*** Responsive ***/
 @media (min-width: 1280px) {
     body>article, body>header {margin-left: 320rem;}
+    body>article.shared, body>header.shared {margin-left: 0;}
 
     [data-drawer] {animation-name: draweropen;z-index: 1;}
     [data-drawer][open]::before{display: none}
