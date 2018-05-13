@@ -12,15 +12,35 @@ let Page = {
         list: []
     },
     loading: true,
+    interval: setInterval(() => Page.save(), 5000),
+    save() {
+        if (
+            Page.documents.current
+            && Page.documents.current.isModified
+            && !Page.documents.current.isSaving
+        ) {
+            return SERVICE.Documents.save(Page.documents.current);
+        }
+
+        return Promise.resolve();
+    },
     setCurrent(current) {
-        Page.documents.current = Page.documents.list[current];
-        if (Page.documents.current.$loki !== undefined) {
-            Page.documents.list.forEach((item, index) => {
-                if (item.isNew && item.code.trim().length === 0) {
-                    Page.documents.list.splice(index, 1);
+        // If current document is modified try to save it one last time
+        Page.save()
+            .then(() => {
+                // Set the new current document
+                Page.documents.current = Page.documents.list[current];
+                Page.documents.current.isModified = false;
+
+                // Remove emptyy documents
+                if (Page.documents.current.$loki !== undefined) {
+                    Page.documents.list.forEach((item, index) => {
+                        if (item.isNew && item.code.trim().length === 0) {
+                            Page.documents.list.splice(index, 1);
+                        }
+                    });
                 }
             });
-        }
     },
     oninit() {
         SERVICE.Documents
@@ -72,8 +92,27 @@ let Page = {
 
         return [
             m('h1', [
-                Page.documents.current.title,
-                m('small', 'La última modificación se realizó ' + SERVICE.Timeago.format(Page.documents.current.modifiedAt))
+                m('input[type="text"].title-input', {
+                    style: 'width: ' + ((Page.documents.current.title.length + 1) * 10) + 'rem;',
+                    oninput(e) {
+                        if (Page.documents.current.isSaving) {
+                            return e.preventDefault();
+                        }
+
+                        Page.documents.current.title = e.target.value;
+                        Page.documents.current.isModified = true;
+                    },
+                    onblur() {
+                        Page.save();
+                    },
+                    value: Page.documents.current.title
+                }),
+                Page.documents.current.isSaving
+                    ? m('small', [
+                        'Guardando...',
+                        m('[data-progress="indeterminated success"]')
+                    ])
+                    : m('small', 'La última modificación se realizó ' + SERVICE.Timeago.format(Page.documents.current.modifiedAt))
             ]),
             m('nav', [
                 !Page.documents.current.$loki
@@ -126,15 +165,16 @@ let Page = {
 
         return m('button[data-button="success raised new"]', {
             onclick(e) {
-                e.preventDefault();
 
                 if (Page.documents.current.isNew && Page.documents.current.code.trim().length === 0) {
                     Object.assign(Page.documents.current, SERVICE.Documents.new());
+                    e.preventDefault();
                     return;
                 }
 
                 Page.documents.list.unshift(SERVICE.Documents.new());
                 Page.setCurrent(0);
+                e.preventDefault();
             }
         }, 'Nuevo');
     },
@@ -201,7 +241,15 @@ let Page = {
         return [
             m('textarea[data-background="default 100"]', {
                 oninput(e) {
+                    if (Page.documents.current.isSaving) {
+                        return e.preventDefault();
+                    }
+
                     Page.documents.current.code = e.target.value;
+                    Page.documents.current.isModified = true;
+                },
+                onblur(e) {
+                    Page.save();
                 },
                 value: Page.documents.current.code
             }),

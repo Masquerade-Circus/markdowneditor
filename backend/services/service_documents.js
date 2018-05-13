@@ -27,21 +27,6 @@ let Service = {
         doc.ip = ip;
         return Service.add(doc);
     },
-    add(document) {
-        if (!Service.isValid(document)) {
-            return Promise.reject(new Error('document.add.invalid'));
-        }
-
-        let doc = Object.assign({
-            createdAt: new Date(),
-            modifiedAt: new Date(),
-            title: document.title.trim() || '',
-            ip: document.ip.trim() || '',
-            code: document.code.trim() || ''
-        }, document);
-
-        return Promise.resolve(Service.getCollection().insert(doc));
-    },
     find(options = {}) {
         let documents = Service
             .getCollection()
@@ -52,7 +37,7 @@ let Service = {
 
         if (documents.length === 0) {
             return Service
-                .new()
+                .new(options.ip)
                 .then(doc => {
                     documents.push(doc);
                     return documents;
@@ -60,7 +45,49 @@ let Service = {
         }
 
         return Promise.resolve(documents);
+    },
+    add(document) {
+        if (!Service.isValid(document)) {
+            return Promise.reject(new Error('document.error.invalid'));
+        }
+
+        let doc = {
+            createdAt: new Date(),
+            modifiedAt: new Date(),
+            title: document.title.trim() || '',
+            ip: document.ip.trim() || '',
+            code: document.code.trim() || ''
+        };
+
+        return Promise.resolve(Service.getCollection().insert(doc));
+    },
+    save(document) {
+        if (!Service.isValid(document)) {
+            return Promise.reject(new Error('document.error.invalid'));
+        }
+
+        // Find the document 
+        let doc = Service.getCollection().get(document.$loki);
+
+        // If does not exist throw error not found 
+        if (doc === null) {
+            return Promise.reject(new Error('document.error.not_found'));
+        }
+
+        // If exists check if the ip is the same as the saved document 
+        // If isnt throw error unauthorized
+        if (doc.ip !== document.ip) {
+            return Promise.reject(new Error('document.error.unauthorized'));
+        }
+
+        // Save the document 
+        doc.title = document.title;
+        doc.code = document.code;
+        doc.modifiedAt = new Date();
+        Service.getCollection().update(doc);
+        return Promise.resolve(Service.getCollection().get(document.$loki));
     }
+
 };
 
 module.exports = Service;

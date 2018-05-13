@@ -48,7 +48,7 @@ button, [data-button]{text-transform: none}
 [data-list] > li > *:first-child > small{opacity: 0.9;padding: 0;font-weight: 400;}
 [data-list] > li > *:last-child > [class*="icon"] {font-size: 18rem;}
 [data-list] > li > *:first-child > [class*="icon"] {font-size: 24rem;}
-[data-list]>li>*{background:inherit;}
+[data-list]>li>*{background:inherit;white-space: nowrap;}
 
 h1, h2, h3, h4, h5{font-weight: 400;}
 textarea{height: auto;}
@@ -56,6 +56,9 @@ textarea{height: auto;}
 dialog[open]{z-index: 1000;}
 
 /*** Main Styles ***/
+.monospaced{
+    font-family: "Lucida Sans Typewriter","Lucida Console",monaco,"Bitstream Vera Sans Mono","Courier New",Courier, monospace;
+}
 [data-button*="new"]{margin: 0;box-shadow: none;border-radius: 0;}
 [data-drawer] [data-list]{border-right: 1px solid #ddd;}
 #modal{/* position: absolute; */min-width: 320rem;}
@@ -73,10 +76,20 @@ dialog[open]{z-index: 1000;}
 
 /*** Editor ***/
 #editor{padding: 0;background:#fff;position: relative;height: 100%;overflow: hidden;}
-#editor>textarea{border-right: 1px solid #ddd;line-height: inherit;}
+#editor>textarea{
+    border-right: 1px solid #ddd;line-height: inherit;
+    font-family: "Lucida Sans Typewriter","Lucida Console",monaco,"Bitstream Vera Sans Mono","Courier New",Courier, monospace;
+}
 #editor>.preview{padding: 15rem;position: relative;max-height: 100%;overflow: auto;}
 #editor>.preview h1,#editor>.preview  h2,#editor>.preview  h3,#editor>.preview  h4,#editor>.preview  h5 {font-weight: 500}
- 
+[contenteditable]:focus{border: 1px dotted}
+.title-input{
+    width: auto;display: inline-block;color: inherit;font-size: 16rem;padding: 1rem 4rem;line-height: 16rem;height: auto;border-bottom: 0;border: 1px solid transparent;transition: all 0s ease-in-out;margin-top: -4rem;
+    font-family: "Lucida Sans Typewriter","Lucida Console",monaco,"Bitstream Vera Sans Mono","Courier New",Courier, monospace;
+}
+.title-input:hover{border: 1px dotted;}
+.title-input:focus{border: 1px solid;}
+
 /*** Responsive ***/
 @media (min-width: 1280px) {
     body>article, body>header {margin-left: 320rem;}

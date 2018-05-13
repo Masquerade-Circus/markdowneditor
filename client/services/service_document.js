@@ -1,10 +1,25 @@
 let Service = {
     isValid(document = {}) {
-        return typeof document === 'object'
+        let isValid = typeof document === 'object'
             && !Array.isArray(document)
             && Object.keys(document).length > 0
             && typeof document.title === 'string'
             && typeof document.code === 'string';
+
+        if (isValid) {
+            return Promise.resolve();
+        }
+
+        COMPONENT.Notification.open({
+            color: 'danger',
+            content: 'The document is invalid'
+        });
+
+        return Promise.reject({
+            status: 'error',
+            message: 'The document is invalid',
+            data: document
+        });
     },
     new() {
         let doc = Object.assign({}, CONFIG.Documents.new);
@@ -13,22 +28,52 @@ let Service = {
         return doc;
     },
     add(document) {
-        if (Service.isValid(document)) {
-            let doc = Object.assign({
-                title: document.title.trim() || '',
-                code: document.code.trim() || ''
-            }, document);
-            return SERVICE.Api.post('api', document);
-        }
-
-        return Promise.reject({
-            status: 'error',
-            message: 'The document is invalid',
-            data: document
-        });
+        return Service
+            .isValid(document)
+            .then(() => {
+                let doc = Object.assign({
+                    title: document.title.trim() || '',
+                    code: document.code.trim() || ''
+                }, document);
+                return SERVICE.Api.post('api', document);
+            });
     },
     find(options = {}) {
         return SERVICE.Api.get('api');
+    },
+    save(document = {}) {
+        document.isSaving = true;
+        return Service
+            .isValid(document)
+            .then(() => {
+                if (!document.isModified) {
+                    return document;
+                }
+
+                let query;
+
+                if (document.isNew && document.$loki === undefined) {
+                    query = Service.add(document);
+                }
+
+                if (!document.isNew && document.$loki !== undefined) {
+                    query = SERVICE.Api.put('api', document.$loki, document);
+                }
+
+                return query
+                    .then(response => {
+                        let doc = response.data;
+                        Object.assign(document, doc);
+                        document.isModified = false;
+                        document.isSaving = false;
+                        document.isNew = false;
+                        return document;
+                    });
+            })
+            .catch(err => {
+                document.isModified = true;
+                throw err;
+            });
     }
 };
 
