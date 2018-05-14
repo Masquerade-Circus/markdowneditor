@@ -7,9 +7,12 @@ Markdown Editor created with [Mithril](https://mithril.js.org/)+[Express](http:/
 ### To run
 Development client bundled with rollup
 ```npm run dev:client ```
+
 Development server 
 ```npm run dev:server ```
+
 Build client with rollup
 ```npm run build ```
+
 Production server
 ```npm run start ```
