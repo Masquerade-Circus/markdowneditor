@@ -20,7 +20,7 @@ let i18nFactory = function (options = {}) {
 
         if (result === undefined) {
             i18n.debug && console.log('The locale "' + i18n.locale + '" does not exists');
-            return;
+            return key;
         }
 
         while (parsed.length) {
@@ -28,7 +28,7 @@ let i18nFactory = function (options = {}) {
 
             if (parsed.length > 0 && typeof result[next] !== 'object') {
                 i18n.debug && console.log('There is no "' + i18n.locale + '" translation for the key "' + key + '".');
-                return;
+                return key;
             }
 
             result = result[next];

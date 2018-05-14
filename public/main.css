@@ -49,6 +49,7 @@ button, [data-button]{text-transform: none}
 [data-list] > li > *:last-child > [class*="icon"] {font-size: 18rem;}
 [data-list] > li > *:first-child > [class*="icon"] {font-size: 24rem;}
 [data-list]>li>*{background:inherit;white-space: nowrap;}
+[data-list]>li>.wrap{white-space: normal}
 
 h1, h2, h3, h4, h5{font-weight: 400;}
 textarea{height: auto;}

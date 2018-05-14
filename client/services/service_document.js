@@ -74,8 +74,35 @@ let Service = {
                     });
             })
             .catch(err => {
+                if (err.message === 'document.error.validation') {
+                    COMPONENT.Modal.open({
+                        header: m('h1', SERVICE.Lang('document.error.validation')),
+                        content: [
+                            m('ul[data-list="two-line"][data-font="danger"]', Object.keys(err.errors).map(errorName => {
+                                let e = err.errors[errorName];
+                                let translationCode = e.message;
+                                if (e.arg) {
+                                    translationCode += '_' + e.arg;
+                                }
+                                return m('li', [
+                                    m('span.wrap', e.path + ': ' + SERVICE.Lang(translationCode))
+                                ]);
+                            }))
+                        ],
+                        footer: [
+                            m('nav', [
+                                m('button[data-button="default"]', {
+                                    onclick(e) {
+                                        COMPONENT.Modal.close(e);
+                                        e.preventDefault();
+                                    }
+                                }, SERVICE.Lang('actions.close'))
+                            ])
+                        ]
+                    });
+                }
                 document.isModified = true;
-                throw err;
+                document.isSaving = false;
             });
     },
     delete(document = {}) {

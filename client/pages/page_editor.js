@@ -7,7 +7,7 @@ let Page = {
         loading: true
     },
     loading: true,
-    interval: setInterval(() => Page.save(), 5000),
+    interval: setInterval(() => Page.save(), 30000),
     isShared: false,
     save() {
         if (
@@ -19,8 +19,11 @@ let Page = {
             return SERVICE.Documents
                 .save(Page.document)
                 .then(document => {
-                    m.route.set('/' + document.$loki);
-                });
+                    if (document.$loki) {
+                        m.route.set('/' + document.$loki);
+                    }
+                })
+                .catch(console.warn);
         }
 
         return Promise.resolve();
@@ -149,7 +152,7 @@ let Page = {
                         return e.preventDefault();
                     }
 
-                    Page.document.code = e.target.value;
+                    Page.document.code = SERVICE.String.clean(e.target.value);
                     Page.document.isModified = true;
                 },
                 onblur(e) {

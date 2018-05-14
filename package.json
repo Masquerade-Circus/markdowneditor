@@ -19,7 +19,9 @@
         "lokijs": "^1.5.4",
         "marked": "^0.3.19",
         "mithril": "^1.1.6",
+        "moment": "^2.22.1",
         "recursive-readdir": "^2.2.2",
+        "schemasaurus": "^0.7.8",
         "timeago.js": "^3.0.2"
     },
     "jscsConfig": {
@@ -45,6 +47,12 @@
         "rollup-plugin-uglify": "^3.0.0"
     },
     "now": {
-        "alias": "markdowneditor"
+        "alias": "markdowneditor",
+        "scale": {
+            "sfo1": {
+                "min": 1,
+                "max": 1
+            }
+        }
     }
 }

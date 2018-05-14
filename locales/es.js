@@ -7,7 +7,8 @@ let Locale = {
             not_found: 'No se encontró el documento',
             invalid: 'El documento no es válido',
             unauthorized: 'Éste documento no te pertenece',
-            bad_request: 'La solicitud no se pudo procesar'
+            bad_request: 'La solicitud no se pudo procesar',
+            validation: 'El documento contiene errores'
         },
         share_modal: {
             title: 'Compartir con otros usuarios',
@@ -33,6 +34,11 @@ let Locale = {
         close: 'Cerrar',
         saving: 'Guardando ...',
         share: 'Compartir'
+    },
+    validation: {
+        string: 'Debe ser solo texto',
+        string_not_json: 'El contenido no debe poder convertirse en un objeto json',
+        required: 'Es requerido'
     },
     timeago: [
         ['justo ahora', 'en un rato'],

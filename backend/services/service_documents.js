@@ -1,4 +1,20 @@
+let ServiceValidate = require('./service_validate');
+
+let Schemas = {
+    json: {
+        type: 'object',
+        properties: {
+            title: { type: 'string' },
+            code: { type: 'string' },
+            ip: { type: 'string' },
+            $loki: { type: 'string' }
+        },
+        required: []
+    }
+};
+
 let Service = {
+    schmas: Schemas,
     collection: undefined,
     getCollection() {
         if (Service.collection === undefined) {
@@ -14,13 +30,32 @@ let Service = {
 
         return Service.collection;
     },
+    Validator: ServiceValidate(Schemas.json),
+    validate(document) {
+        return Service.Validator
+            .data(document)
+            .normalize()
+            .validate()
+            .then(data => data);
+    },
     isValid(document = {}, checkCode = true) {
-        return typeof document === 'object'
-            && !Array.isArray(document)
-            && Object.keys(document).length > 0
-            && typeof document.title === 'string'
-            && typeof document.ip === 'string'
-            && (checkCode ? typeof document.code === 'string' : true);
+        return new Promise((resolve, reject) => {
+            let valid = typeof document === 'object'
+                && !Array.isArray(document)
+                && Object.keys(document).length > 0
+                && typeof document.title === 'string'
+                && typeof document.ip === 'string'
+                && (checkCode ? typeof document.code === 'string' : true);
+
+            // To avoid schema validation if its not required
+            if (!checkCode) {
+                return valid
+                    ? resolve(document)
+                    : reject(new Error('document.error.invalid'));
+            }
+
+            resolve(Service.validate(document));
+        });
     },
     new(ip) {
         let doc = Object.assign({}, CONFIG.Documents.new);
@@ -74,71 +109,69 @@ let Service = {
         return Promise.resolve(doc);
     },
     add(document) {
-        if (!Service.isValid(document)) {
-            return Promise.reject(new Error('document.error.invalid'));
-        }
+        return Service.isValid(document)
+            .then(document => {
+                let doc = {
+                    createdAt: new Date(),
+                    modifiedAt: new Date(),
+                    title: document.title.trim() || '',
+                    ip: document.ip.trim() || '',
+                    code: document.code.trim() || '',
+                    deleted: false
+                };
 
-        let doc = {
-            createdAt: new Date(),
-            modifiedAt: new Date(),
-            title: document.title.trim() || '',
-            ip: document.ip.trim() || '',
-            code: document.code.trim() || '',
-            deleted: false
-        };
-
-        return Promise.resolve(Service.getCollection().insert(doc));
+                return Service.getCollection().insert(doc);
+            });
     },
     save(document) {
-        if (!Service.isValid(document)) {
-            return Promise.reject(new Error('document.error.invalid'));
-        }
+        return Service.isValid(document)
+            .then(document => {
+                // Find the document 
+                let doc = Service.getCollection().get(document.$loki);
 
-        // Find the document 
-        let doc = Service.getCollection().get(document.$loki);
+                // If does not exist throw error not found 
+                if (doc === null) {
+                    throw new Error('document.error.not_found');
+                }
 
-        // If does not exist throw error not found 
-        if (doc === null) {
-            return Promise.reject(new Error('document.error.not_found'));
-        }
+                // If exists check if the ip is the same as the saved document 
+                // If isnt throw error unauthorized
+                if (doc.ip !== document.ip) {
+                    throw new Error('document.error.unauthorized');
+                }
 
-        // If exists check if the ip is the same as the saved document 
-        // If isnt throw error unauthorized
-        if (doc.ip !== document.ip) {
-            return Promise.reject(new Error('document.error.unauthorized'));
-        }
-
-        // Save the document 
-        doc.title = document.title;
-        doc.code = document.code;
-        doc.modifiedAt = new Date();
-        Service.getCollection().update(doc);
-        return Promise.resolve(Service.getCollection().get(document.$loki));
+                // Save the document 
+                doc.title = document.title;
+                doc.code = document.code;
+                doc.modifiedAt = new Date();
+                Service.getCollection().update(doc);
+                return Service.getCollection().get(document.$loki);
+            });
     },
     delete(document) {
-        if (!Service.isValid(document, false)) {
-            return Promise.reject(new Error('document.error.invalid'));
-        }
+        return Service.isValid(document, false)
+            .then(document => {
+                // Find the document 
+                let doc = Service.getCollection().get(document.$loki);
 
-        // Find the document 
-        let doc = Service.getCollection().get(document.$loki);
+                // If does not exist throw error not found 
+                if (doc === null) {
+                    throw new Error('document.error.not_found');
+                }
 
-        // If does not exist throw error not found 
-        if (doc === null) {
-            return Promise.reject(new Error('document.error.not_found'));
-        }
+                // If exists check if the ip is the same as the saved document 
+                // If isnt throw error unauthorized
+                if (doc.ip !== document.ip) {
+                    throw new Error('document.error.unauthorized');
+                }
 
-        // If exists check if the ip is the same as the saved document 
-        // If isnt throw error unauthorized
-        if (doc.ip !== document.ip) {
-            return Promise.reject(new Error('document.error.unauthorized'));
-        }
+                // Save the document 
+                doc.deletedAt = new Date();
+                doc.deleted = true;
+                Service.getCollection().update(doc);
 
-        // Save the document 
-        doc.deletedAt = new Date();
-        doc.deleted = true;
-        Service.getCollection().update(doc);
-        return Promise.resolve();
+                // Do not return anything
+            });
     }
 
 };
