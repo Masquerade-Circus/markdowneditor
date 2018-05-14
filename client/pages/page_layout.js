@@ -242,7 +242,7 @@ let Page = {
                     m('[data-drawer-content]', [
                         m('[data-flexible-bar]', [
                             m('[data-flexible-bar-media][data-background="info 700"]', [
-                                m('div[style="margin-top:50rem"]', [
+                                m('div', [
                                     m('h4', SERVICE.Lang('ui.title'))
                                 ])
                             ])
