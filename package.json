@@ -14,7 +14,7 @@
         "compression": "^1.7.2",
         "cors": "^2.8.4",
         "cross-env": "^5.1.4",
-        "express": "^4.16.3",
+        "express": "^4.17.3",
         "express-response-handler": "^1.4.1",
         "lokijs": "^1.5.4",
         "marked": "^0.3.19",
